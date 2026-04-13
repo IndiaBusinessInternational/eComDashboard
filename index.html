@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IBI Automation Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f7f6; --surface: #ffffff; --text: #1e293b; --text-muted: #64748b;
+            --border: #e2e8f0; --primary: #2563eb; --primary-hover: #1d4ed8;
+            --success: #10b981; --success-hover: #059669; --sidebar: #0f172a; --sidebar-text: #f8fafc;
+        }
+        [data-theme="dark"] {
+            --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8;
+            --border: #334155; --primary: #3b82f6; --primary-hover: #60a5fa;
+            --success: #10b981; --success-hover: #34d399; --sidebar: #020617;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); display: flex; min-height: 100vh; transition: 0.3s; }
+
+        /* Sidebar Navigation */
+        .sidebar { width: 260px; background: var(--sidebar); color: var(--sidebar-text); padding: 24px; display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; color: white;}
+        .nav-links { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-link { padding: 12px 16px; border-radius: 8px; color: #cbd5e1; text-decoration: none; font-weight: 500; transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .theme-toggle { margin-top: auto; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; text-align: center; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; flex: 1; padding: 40px; display: flex; flex-direction: column; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .top-bar h1 { font-size: 2rem; font-weight: 800; color: var(--text); }
+        .search-box { background: var(--surface); border: 1px solid var(--border); padding: 12px 20px; border-radius: 30px; width: 350px; font-size: 1rem; color: var(--text); outline: none; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .search-box:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        /* Category Sections */
+        .category-section { margin-bottom: 50px; }
+        .category-title { font-size: 1.2rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        
+        /* App Cards */
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: var(--primary); }
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .icon-box { width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; background: rgba(37, 99, 235, 0.1); }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text); line-height: 1.3;}
+        
+        .btn-group { display: flex; gap: 10px; margin-top: auto; }
+        .btn { flex: 1; padding: 10px 0; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; font-size: 0.9rem; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 6px; }
+        .btn-input { background: var(--primary); color: white; border: 1px solid var(--primary); }
+        .btn-input:hover { background: var(--primary-hover); }
+        .btn-output { background: var(--surface); color: var(--success); border: 1px solid var(--success); }
+        .btn-output:hover { background: var(--success); color: white; }
+
+        .hidden { display: none !important; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; padding: 15px; }
+            .nav-links { flex-direction: row; flex-wrap: wrap; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .top-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .search-box { width: 100%; }
+            .theme-toggle { margin-top: 15px; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="sidebar">
+        <h2>📦 IBI Control</h2>
+        <div class="nav-links" id="navLinks">
+            </div>
+        <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>Master Dashboard</h1>
+            <input type="text" id="searchInput" class="search-box" placeholder="Search for tools, calculators, trackers..." onkeyup="filterTools()">
+        </div>
+
+        <div id="dashboardContainer">
+            </div>
+    </div>
+
+    <script>
+        // --- 1. THE IBI DATABASE (ALL 16 TOOLS) ---
+        const ibiData = [
+            {
+                category: "eCommerce Operations",
+                icon: "⚙️",
+                tools: [
+                    { name: "IBI Staff Attendance", icon: "👥", input: "https://staff.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1yj1qGr6t-K8g4cpS6AVvX582gK38BL_yUfPNMN_99_I/edit?gid=1736486962#gid=1736486962" },
+                    { name: "IBI Dimensions Logger", icon: "📏", input: "https://dimensions.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1kAuSd-_OiPnDtXzqQMkBFtZdVzfW44kiKAsSZHsYpb8/edit?gid=0#gid=0" },
+                    { name: "IBI Listing Generator", icon: "📝", input: "https://listings.indiabusinessinternational.online", output: "https://docs.google.com/document/d/1LRarO6EJXAElKJzz1wrCZ3ZaieyX3E6SUAto4Gu-qnk/edit?tab=t.0" },
+                    { name: "IBI Order Processing", icon: "🛒", input: "https://orders.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1Y1sE5fPODjevfYJXhTeJzi0djWGo5pdl2xy-obxhO0Q/edit?gid=0#gid=0" },
+                    { name: "IBI Returns Logger", icon: "↩️", input: "https://returns.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1GyHnZbfsqY9nyXggWhrEwSPbYYZ4cDhgdjDqmsB5juE/edit?gid=0#gid=0" }
+                ]
+            },
+            {
+                category: "Stocks & Inventory",
+                icon: "📦",
+                tools: [
+                    { name: "IBI Stock Availability", icon: "📊", input: null, output: "https://docs.google.com/spreadsheets/d/1bp0OpZJKWB3-xEDKAgk5EErQ4JVg3uwmF2QAM35K6lA/edit?gid=0#gid=0" }
+                ]
+            },
+            {
+                category: "MarketPlace",
+                icon: "🏪",
+                tools: [
+                    { name: "IBI eCommerce Marketplace", icon: "🌐", input: "https://www.IndiaBusinessInternational.Online", output: null },
+                    { name: "IBI Marketplace Admin", icon: "🔐", input: "https://www.indiabusinessinternational.online/admin.html", output: null }
+                ]
+            },
+            {
+                category: "Logistics",
+                icon: "🚚",
+                tools: [
+                    { name: "IBI Pickup Request Manager", icon: "📅", input: "https://pickup.indiabusinessinternational.online", output: null },
+                    { name: "IBI Package Tracker", icon: "📍", input: "https://database.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1VjK5oA6mCZVXZ2AhfZYtb0kVAkB549bSUB4iQ4eW7f0/edit?gid=0#gid=0" }
+                ]
+            },
+            {
+                category: "Finance & Analytics",
+                icon: "💰",
+                tools: [
+                    { name: "IBI Multi-Calculator", icon: "🧮", input: "https://calculator.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1WHJRmwgLkXfhoICYaiMbOpv2Ahr12j9oahFNXp7OsNc/edit?gid=2019055467#gid=2019055467" },
+                    { name: "IBI Settlement Tracker", icon: "✅", input: "https://indiabusinessinternational.github.io/Settlement-Tracker", output: "https://docs.google.com/spreadsheets/d/1jLY1ibq5ntLSMuo1kY5tqo9W4yGqILCxhjESKiOUSno/edit?gid=826943701#gid=826943701" },
+                    { name: "IBI Finance Tracker", icon: "📈", input: "https://finance.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/1hbh5E9kzX4632d4kaMHLXC-Aqhi5exgEJWOxMtSrttE/edit?gid=0#gid=0" },
+                    { name: "IBI GST Report Generator", icon: "🏛️", input: "https://gstr.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/159BRN0yyWjJMwx3zyq7OHgZXGPtwI6Nil3384cumfYo/edit?gid=1351698340#gid=1351698340" }
+                ]
+            },
+            {
+                category: "Pricing Strategy",
+                icon: "🏷️",
+                tools: [
+                    { name: "IBI Price Search Min/Max", icon: "🔍", input: "https://price.indiabusinessinternational.online", output: "https://docs.google.com/spreadsheets/d/18tm8vJa9JiSMjXhpzabLums3cQRjJgPNX6LRNyJiLVY/edit?gid=0#gid=0" },
+                    { name: "IBI Competitor Price Link API", icon: "⚔️", input: "https://indiabusinessinternational.github.io/Competitor", output: "https://docs.google.com/spreadsheets/d/1GkUAOxLcq-RlGPj0XU23whD7Di7Rv-ooD-_mL-MtWzA/edit?gid=0#gid=0" }
+                ]
+            }
+        ];
+
+        // --- 2. RENDER THE DASHBOARD ---
+        const dashboard = document.getElementById("dashboardContainer");
+        const navLinks = document.getElementById("navLinks");
+
+        function renderDashboard() {
+            dashboard.innerHTML = "";
+            navLinks.innerHTML = "";
+
+            ibiData.forEach((section, index) => {
+                const sectionId = "section-" + index;
+
+                // Create Nav Link
+                const navA = document.createElement("a");
+                navA.className = "nav-link";
+                navA.href = "#" + sectionId;
+                navA.innerHTML = `${section.icon} ${section.category}`;
+                navLinks.appendChild(navA);
+
+                // Create Section
+                const sectionDiv = document.createElement("div");
+                sectionDiv.className = "category-section";
+                sectionDiv.id = sectionId;
+
+                const title = document.createElement("h3");
+                title.className = "category-title";
+                title.innerText = section.icon + " " + section.category;
+                sectionDiv.appendChild(title);
+
+                const grid = document.createElement("div");
+                grid.className = "grid";
+
+                // Create Cards
+                section.tools.forEach(tool => {
+                    const card = document.createElement("div");
+                    card.className = "card tool-card";
+                    card.dataset.name = tool.name.toLowerCase();
+
+                    let buttonsHtml = "";
+                    if (tool.input) {
+                        buttonsHtml += `<a href="${tool.input}" target="_blank" class="btn btn-input">▶ Open App</a>`;
+                    }
+                    if (tool.output) {
+                        buttonsHtml += `<a href="${tool.output}" target="_blank" class="btn btn-output">📊 View Database</a>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="icon-box">${tool.icon}</div>
+                            <div class="card-title">${tool.name}</div>
+                        </div>
+                        <div class="btn-group">
+                            ${buttonsHtml}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                sectionDiv.appendChild(grid);
+                dashboard.appendChild(sectionDiv);
+            });
+        }
+
+        // --- 3. LIVE SEARCH FILTER ---
+        function filterTools() {
+            const query = document.getElementById("searchInput").value.toLowerCase();
+            const cards = document.querySelectorAll(".tool-card");
+            const sections = document.querySelectorAll(".category-section");
+
+            cards.forEach(card => {
+                if (card.dataset.name.includes(query)) {
+                    card.classList.remove("hidden");
+                } else {
+                    card.classList.add("hidden");
+                }
+            });
+
+            // Hide empty sections
+            sections.forEach(section => {
+                const visibleCards = section.querySelectorAll(".tool-card:not(.hidden)");
+                if (visibleCards.length === 0) {
+                    section.style.display = "none";
+                } else {
+                    section.style.display = "block";
+                }
+            });
+        }
+
+        // --- 4. DARK MODE TOGGLE ---
+        const currentTheme = localStorage.getItem('ibi_dash_theme') || 'light';
+        if (currentTheme === 'dark') { 
+            document.body.setAttribute('data-theme', 'dark'); 
+            document.getElementById('themeBtn').innerText = '☀️ Light Mode'; 
+        }
+
+        function toggleTheme() {
+            if (document.body.getAttribute('data-theme') === 'dark') { 
+                document.body.setAttribute('data-theme', 'light'); 
+                localStorage.setItem('ibi_dash_theme', 'light'); 
+                document.getElementById('themeBtn').innerText = '🌙 Dark Mode'; 
+            } else { 
+                document.body.setAttribute('data-theme', 'dark'); 
+                localStorage.setItem('ibi_dash_theme', 'dark'); 
+                document.getElementById('themeBtn').innerText = '☀️ Light Mode'; 
+            }
+        }
+
+        // Initialize App
+        renderDashboard();
+    </script>
+</body>
+</html>
