@@ -22,7 +22,17 @@
 
         /* Sidebar Navigation */
         .sidebar { width: 260px; background: var(--sidebar); color: var(--sidebar-text); padding: 24px; display: flex; flex-direction: column; position: fixed; height: 100vh; overflow-y: auto; }
-        .sidebar h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; color: white;}
+        
+        /* New Brand Logo Style */
+        .brand-logo {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: block;
+        }
+
         .nav-links { display: flex; flex-direction: column; gap: 8px; flex: 1; }
         .nav-link { padding: 12px 16px; border-radius: 8px; color: #cbd5e1; text-decoration: none; font-weight: 500; transition: 0.2s; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
@@ -73,7 +83,8 @@
 <body data-theme="light">
 
     <div class="sidebar">
-        <h2>📦 IBI Control</h2>
+        <img src="logo.png" alt="India Business International" class="brand-logo" onerror="this.style.display='none'">
+        
         <div class="nav-links" id="navLinks">
             </div>
         <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
